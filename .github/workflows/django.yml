@@ -9,57 +9,33 @@ on:
       - main
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
-
-    services:
-      db:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: devsecportfolio
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
+      - name: Set up Docker Compose
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          docker-compose version
 
-      - name: Wait for PostgreSQL
+      - name: Build and start services
         run: |
-          until pg_isready -h db -p 5432 -U postgres; do
+          docker-compose up -d --build db
+
+      - name: Wait for DB to be ready
+        run: |
+          until docker-compose exec db pg_isready -U postgres; do
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
 
-      - name: Run tests
-        run: python manage.py test
+      - name: Build web service
+        run: docker-compose build web
 
-      - name: Lint code (optional)
-        run: |
-          pip install flake8
-          flake8 .
+      - name: Run Django tests
+        run: docker-compose run --rm web python manage.py test
 
-      - name: Security scan (optional)
-        run: |
-          pip install safety
-          safety check
-
-      - name: Build Docker image
-        run: docker build . -t devsecportfolio:latest
+      - name: Shutdown services
+        run: docker-compose down -v
