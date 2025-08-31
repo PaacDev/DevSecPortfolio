@@ -9,11 +9,11 @@ on:
       - main
 
 jobs:
-  build-test:
+  test:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
+      db:
         image: postgres:15
         env:
           POSTGRES_USER: postgres
@@ -26,30 +26,40 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    env:
-      DATABASE_NAME: devsecportfolio
-      DATABASE_USER: postgres
-      DATABASE_PASSWORD: postgres
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      DEBUG: 1
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run tests
-      run: python manage.py test
-      
-    - name: Build Docker image
-      run: docker build . -t devsecportfolio:latest
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h db -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Run tests
+        run: python manage.py test
+
+      - name: Lint code (optional)
+        run: |
+          pip install flake8
+          flake8 .
+
+      - name: Security scan (optional)
+        run: |
+          pip install safety
+          safety check
+
+      - name: Build Docker image
+        run: docker build . -t devsecportfolio:latest
