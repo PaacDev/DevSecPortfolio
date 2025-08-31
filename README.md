@@ -2,7 +2,7 @@
 
 Este proyecto es un **dashboard de sensores** desarrollado en Django, que visualiza temperatura, humedad y consumo de energía en gráficos interactivos usando Chart.js y Bootstrap.
 
-El proyecto está preparado para ejecutarse con **Docker y Docker Compose**, lo que garantiza un entorno reproducible y limpio sin necesidad de instalar Python o dependencias localmente.
+El proyecto está preparado para ejecutarse con **Docker y Docker Compose**, usando **PostgreSQL** como base de datos, lo que garantiza un entorno reproducible y limpio sin necesidad de instalar Python o dependencias localmente.
 
 ---
 
@@ -12,8 +12,8 @@ El proyecto está preparado para ejecutarse con **Docker y Docker Compose**, lo 
 - Django 5.2.5
 - Bootstrap 5
 - Chart.js
+- PostgreSQL 15
 - Docker / Docker Compose
-- SQLite (base de datos por defecto)
 
 ---
 
@@ -30,13 +30,19 @@ cd DevSecPortfolio
 ```bash
 docker-compose up --build
 ```
-3. Abrir en el navegador:
+
+3.  Cargar datos de ejemplo en el modelo SensorData: 
+```bash   
+docker-compose run web python manage.py runscript generate_data
+```
+
+4. Abrir en el navegador:
 
 http://127.0.0.1:8000/
 
 Todos los cambios en el código local se reflejarán automáticamente gracias al volumen montado en Docker Compose.
 
-4. Para detener el contenedor:
+5. Para detener el contenedor:
 ```bash
 docker-compose down
 ```
