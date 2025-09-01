@@ -16,26 +16,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Docker Compose
+      - name: Build and start DB
         run: |
-          docker-compose version
-
-      - name: Build and start services
-        run: |
-          docker-compose up -d --build db
+          docker compose up -d --build db
 
       - name: Wait for DB to be ready
         run: |
-          until docker-compose exec db pg_isready -U postgres; do
+          until docker compose exec db pg_isready -U postgres; do
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
 
       - name: Build web service
-        run: docker-compose build web
+        run: docker compose build web
 
       - name: Run Django tests
-        run: docker-compose run --rm web python manage.py test
+        run: docker compose run --rm web python manage.py test
 
       - name: Shutdown services
-        run: docker-compose down -v
+        run: docker compose down -v
