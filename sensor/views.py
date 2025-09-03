@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from .models import SensorData
+from django.views.decorators.http import require_GET
 
 
+@require_GET
 def dashboard(request):
     data = SensorData.objects.all().order_by("timestamp")
 
