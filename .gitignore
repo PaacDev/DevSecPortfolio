@@ -22,3 +22,6 @@ __pycache__/
 # Archivos estáticos y de medios generados
 /staticfiles/
 /media/
+
+# Archivos de entorno
+.env
