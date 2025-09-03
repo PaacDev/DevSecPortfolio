@@ -1,0 +1,5 @@
+# Ignorar el entorno virtual
+venv/
+*.pyc
+__pycache__/
+.env
