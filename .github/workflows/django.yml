@@ -38,6 +38,13 @@ jobs:
         run: |
           docker compose up -d --build
 
+      - name: Wait for DB to be ready
+        run: |
+          until docker compose exec db pg_isready -U $DB_USER; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
       - name: Run Django tests
         run: |
           docker compose exec web sh -c "coverage run --source='.' manage.py test && coverage xml"
